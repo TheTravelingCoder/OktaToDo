@@ -48,6 +48,10 @@ router.post('/getTodo', (req, res) => {
   loginController.getTodo(req, res);
 });
 
+router.post('/deleteTodo', (req, res) => {
+  loginController.deleteTodo(req, res);
+});
+
 /////////////////
 //Google Oauth //
 /////////////////

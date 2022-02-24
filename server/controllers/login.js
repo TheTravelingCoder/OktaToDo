@@ -77,14 +77,40 @@ module.exports.addTodo = async (req, res) => {
   }
 };
 
+// Handles delete todo
+module.exports.deleteTodo = async (req, res) => {
+  if(req.body.jwt && req.body.id){
+    let jwt = req.body.jwt;
+    let id = req.body.id;
+    let decoded = verify(jwt, "SoSoSecretMyGuy");
+    let email = decoded.email;
+    console.log(id)
+    await Todo.findOneAndDelete({ 
+      _id: id, 
+      email: email 
+    }).then(todo => {
+      if(todo){
+        console.log('Deleted Note: ', todo)
+        res.status(200).send('Deleted Note');
+      }else{
+        res.status(400).send('error');
+      }
+    })
+  }else{
+    res.status(201).send('BadCreds');
+    return;
+  }
+};
+
+
 // Handles get todo
 module.exports.getTodo = async (req, res) => {
   if(req.body.jwt){
     let jwt = req.body.jwt;
     let decoded = verify(jwt, "SoSoSecretMyGuy");
     let email = decoded.email; 
-    Todo.find({ email: email }).then(todo => {
-      if(todo.length > 0){
+    await Todo.find({ email: email }).then(todo => {
+      if(todo.length !== []){
         res.status(200).send(todo);
       }else{
         res.status(400).send('error');

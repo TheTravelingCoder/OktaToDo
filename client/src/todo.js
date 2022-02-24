@@ -2,10 +2,15 @@ import * as React from 'react';
 import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
 import { useOktaAuth } from '@okta/okta-react';
 import { useHistory } from 'react-router-dom';
 import axios from 'axios';
@@ -18,11 +23,11 @@ async function getToDoFromServer(tokens, res){
     jwt: jwt
   }
   await axios.post('http://localhost:5000/getTodo', body).then(async response => {
-    if(response.status === 400){
-      return "noToDo"
-    }else{
+    if(response.status === 200){
       sessionStorage.setItem("todo", JSON.stringify(response.data));
       return "todo";
+    }else{
+      return "noToDo"
     }
   })
 }
@@ -42,15 +47,28 @@ async function createToDo(){
 
 async function signout(oktaAuth){
   console.log(oktaAuth.tokenManager)
-  let token = sessionStorage.getItem('idToken');
+  let jwt = sessionStorage.getItem('jwt');
   let clientID = keys.clientId;
-  console.log(clientID, token)
+  console.log(clientID, jwt)
   oktaAuth.tokenManager.clear();
+}
+
+async function deleteTodo(id){
+  let jwt = sessionStorage.getItem('jwt');
+  let body = {
+    id: id,
+    jwt: jwt
+  }
+  console.log(body)
+  await axios.post('http://localhost:5000/deleteTodo', body).then(async response => {
+    window.location.reload();
+  })
 }
 
 export default function CheckboxLabels() {
   const history = useHistory();
   const { oktaAuth } = useOktaAuth();
+  const [dense] = React.useState(false);
   let todoStatus = getToDoFromServer();
 
   function logout(){
@@ -73,8 +91,25 @@ export default function CheckboxLabels() {
     let user = sessionStorage.getItem('email');
     let todo = JSON.parse(sessionStorage.getItem('todo'));
     let todos = [];
+    let ids = [];
     for(let i = 0; i < todo.length; i++){
-      todos.push(<FormControlLabel key={todo[i]._id} control={<Checkbox defaultChecked />} label={todo[i].todo} />);
+      let id = todo[i]._id;
+      ids.push(id);
+      todos.push(
+      <ListItem value={ids[i]} key={ids[i]} onClick={() => deleteTodo(ids[i])}
+        secondaryAction={
+          <IconButton edge="end" aria-label="delete">
+            <DeleteIcon />
+          </IconButton>
+        }
+      >
+        <ListItemAvatar>
+          <Checkbox defaultChecked />
+        </ListItemAvatar>
+        <ListItemText
+          primary={todo[i].todo}
+        />
+      </ListItem>);
     }
     return (
       <Container>
@@ -82,7 +117,7 @@ export default function CheckboxLabels() {
           <Button variant='contained' color="error" onClick={logout}>Logout</Button>
           Welcome {user}
         </Typography>
-        <FormGroup id="formGroup">
+        <List dense={dense} id="formGroup">
           <Typography variant="h4" component="div" gutterBottom>
             To-Do's
           </Typography>
@@ -93,7 +128,7 @@ export default function CheckboxLabels() {
             label="Add ToDo Item"
           />
           <Button variant='outlined' onClick={createToDo}>Add Item</Button>
-        </FormGroup>
+        </List>
       </Container>
     );
   }
