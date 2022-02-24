@@ -1,0 +1,8 @@
+/server/config
+/server/node_modules
+
+/client/node_modules
+/client/src/keys.js
+
+/myapp/node_modules
+node_modules
