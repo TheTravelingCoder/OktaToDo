@@ -54,7 +54,7 @@ module.exports.login = async (req, res) => {
 
 // Handles add todo
 module.exports.addTodo = async (req, res) => {
-  if(req.body.todo){
+  if(req.body.jwt && req.body.todo){
     let todoNote = req.body.todo;
     let jwt = req.body.jwt;
     let decoded = verify(jwt, "SoSoSecretMyGuy");
