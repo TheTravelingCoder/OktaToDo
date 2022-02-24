@@ -1,0 +1,5 @@
+/api/config
+/api/node_modules
+/client/node_modules
+/myapp/node_modules
+node_modules
